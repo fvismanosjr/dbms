@@ -180,13 +180,24 @@ class DB:
         self.db_dir.mkdir(exist_ok=True)
         self.db_name = db_name
         self.db_file = self.db_dir / (self.db_name + ".db")
+        self.DB = None
 
     def open_db(self):
+        # gdbm (the typical Linux/Docker backend) takes an EXCLUSIVE lock on the
+        # file and refuses to open a handle that is already open, raising
+        # "[Errno 11] Resource temporarily unavailable". Error paths in dbms.py
+        # can raise between open_db() and close_db(), leaking an open handle on a
+        # long-lived DB object (notably the shared MetaDB); releasing any stale
+        # handle here keeps a subsequent statement from crashing on re-open.
+        # (Berkeley DB and macOS's ndbm tolerated double-opens; gdbm does not.)
+        self.close_db()
         # 'c' opens the store for read/write, creating it if it does not exist.
         self.DB = dbm.open(str(self.db_file), "c")
 
     def close_db(self):
-        self.DB.close()
+        if self.DB is not None:
+            self.DB.close()
+            self.DB = None
 
     def create_cursor(self):
         return Cursor(self.DB)

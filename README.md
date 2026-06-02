@@ -12,11 +12,28 @@ This repository contains a simple SQL Database Management System (DBMS) implemen
 python==3.9
 lark==1.1.5
 ```
-Storage is backed by Python's built-in [`dbm`](https://docs.python.org/3/library/dbm.html) module, so there are no native libraries to install (this replaces the original BerkeleyDB backend).
+Storage is backed by Python's built-in [`dbm`](https://docs.python.org/3/library/dbm.html) module, so there are no native libraries to install (this replaces the original BerkeleyDB backend). This is what makes the project run identically on macOS, Linux, and Windows.
 
+### Run natively
 ```
+python -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 python run.py
 ```
+
+### Run in Docker (recommended for a consistent, cross-platform setup)
+The repo ships a `Dockerfile`, `docker-compose.yml`, and `Makefile` so everyone runs the same environment regardless of host OS:
+```
+make build      # build the image (once)
+make run        # start the interactive SQL REPL
+make shell      # open a shell inside the container
+make test       # pipe a few statements through the engine as a smoke test
+make reset      # wipe the database volume
+```
+VS Code / Cursor users can instead "Reopen in Container" (see `.devcontainer/`).
+
+> Note: table and column **identifiers must start with a letter and contain only letters and underscores** — names like `t2` are rejected by the grammar as a syntax error. Use `account`, `students`, etc.
 
 ## Sample I/O
 
