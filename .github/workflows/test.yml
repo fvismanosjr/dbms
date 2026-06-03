@@ -52,6 +52,19 @@ jobs:
       - name: Run ${{ matrix.test }}
         run: |
           python run_tests.py --test ${{ matrix.test }} --verbose
+      - name: Print diagnostics on failure
+        if: failure()
+        run: |
+          echo "=== EXPECTED OUTPUT ==="
+          cat test/${{ matrix.test }}_expected.txt || true
+          echo ""
+          echo "=== ACTUAL OUTPUT ==="
+          cat test/${{ matrix.test }}_actual.txt || true
+          echo ""
+          echo "=== FIRST 20 LINES DIFF ==="
+          head -20 test/${{ matrix.test }}_expected.txt > /tmp/exp.txt || true
+          head -20 test/${{ matrix.test }}_actual.txt > /tmp/act.txt || true
+          diff -u /tmp/exp.txt /tmp/act.txt || true
 
   # ─────────────────────────────────────────────
   # GUI Build Check

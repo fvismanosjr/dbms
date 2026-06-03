@@ -204,6 +204,12 @@ def run_single_test(test_name: str) -> TestResult:
                 diff_lines.append(f"  EXPECTED: {e}")
                 diff_lines.append(f"  ACTUAL:   {o}")
         diff = '\n'.join(diff_lines[:50])  # Limit diff size
+        
+        # Save actual output for CI debugging
+        actual_file = os.path.join(TEST_DIR, f"{test_name}_actual.txt")
+        with open(actual_file, "w", encoding="utf-8") as f:
+            f.write(output)
+        
         return TestResult(
             name=test_name,
             passed=False,
