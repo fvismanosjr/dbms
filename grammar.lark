@@ -5,6 +5,9 @@
 %import common.WS
 %ignore WS
 
+COMMENT : /--[^\n]*/
+%ignore COMMENT
+
 // Parenthesis
 LP : "("
 RP : ")"
@@ -62,6 +65,14 @@ SHOW : "show"i
 UPDATE : "update"i
 SET : "set"i
 
+BEGIN : "begin"i
+TRANSACTION : "transaction"i
+COMMIT : "commit"i
+ROLLBACK : "rollback"i
+
+INDEX : "index"i
+ON : "on"i
+
 EXIT : "exit"i
 
 
@@ -78,6 +89,11 @@ query : create_table_query
       | select_query
       | show_tables_query
       | update_query
+      | create_index_query
+      | drop_index_query
+      | begin_query
+      | commit_query
+      | rollback_query
 
 
 // CREATE TABLE
@@ -149,5 +165,18 @@ null_operation : IS [NOT] NULL
 show_tables_query : SHOW TABLES
 
 // UPDATE
-update_query : UPDATE table_name SET assignment [where_clause]
+update_query : UPDATE table_name SET assignment_list [where_clause]
+assignment_list : assignment ("," assignment)*
 assignment : column_name EQUAL value
+
+// CREATE INDEX
+create_index_query : CREATE INDEX index_name ON table_name LP column_name RP
+index_name : IDENTIFIER
+
+// DROP INDEX
+drop_index_query : DROP INDEX table_name "." column_name
+
+// TRANSACTIONS
+begin_query : BEGIN [TRANSACTION]
+commit_query : COMMIT
+rollback_query : ROLLBACK

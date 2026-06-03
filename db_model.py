@@ -27,14 +27,16 @@ class Table(DataObject):
         not_null_keys: Set[str], 
         primary_key: Tuple[str], 
         foreign_keys: Dict[str, Tuple[str, str]],
-        referenced_by: Set[str]=set()
+        referenced_by: Set[str]=None,
+        indexes: Set[str]=None
     ):
         self.table_name = table_name
         self.columns = columns  # key: column name, value: column referencing_type
         self.not_null_keys = not_null_keys  # set of column names
         self.primary_key = primary_key  # tuple of column names (order is important in this project)
         self.foreign_keys = foreign_keys  # key: referencing column name, value: tuple of (referenced table name, referenced column name)
-        self.referenced_by = referenced_by  # set of table names that reference this table
+        self.referenced_by = referenced_by if referenced_by is not None else set()  # set of table names that reference this table
+        self.indexes = indexes if indexes is not None else set()  # set of indexed column names
         
     def __str__(self):
         info = "\n-----------------------------------------------------------------\n"

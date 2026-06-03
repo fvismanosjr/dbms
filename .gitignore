@@ -3,3 +3,16 @@ venv/
 .venv/
 __pycache__/
 *.pyc
+.git/
+.fabric/
+node_modules/
+build/
+dist/
+out/
+.cache/
+cache/
+tmp/
+tmp.benchmarks/
+*.map
+*.log
+.DS_Store

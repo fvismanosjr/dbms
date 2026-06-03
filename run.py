@@ -18,7 +18,7 @@ def main():
         for query in query_list:
             try:
                 sql_transformer = SQLTransformer()
-                statement, table, record, tables, select_columns, where = parse_query(sql_parser, sql_transformer, query)
+                statement, table, record, tables, select_columns, where, index, assignments = parse_query(sql_parser, sql_transformer, query)
                 if statement == 'exit':
                     exit = True  # end program only when exit query is entered
                     break
@@ -45,13 +45,35 @@ def main():
                 elif statement == "select":
                     output = dbms.select(tables, select_columns, where)
                     print(PROMPT + output)
+                elif statement == "update":
+                    result = dbms.update(table["table_name"], assignments, where)
+                    print(PROMPT + str(result))
+                elif statement == "create index":
+                    result = dbms.create_index(index["index_name"], index["table_name"], index["column_name"])
+                    print(PROMPT + str(result))
+                elif statement == "drop index":
+                    result = dbms.drop_index(index["table_name"], index["column_name"])
+                    print(PROMPT + str(result))
+                elif statement == "begin":
+                    result = dbms.begin_transaction()
+                    print(PROMPT + str(result))
+                elif statement == "commit":
+                    result = dbms.commit_transaction()
+                    print(PROMPT + str(result))
+                elif statement == "rollback":
+                    result = dbms.rollback_transaction()
+                    print(PROMPT + str(result))
             except (SyntaxError, NoSuchTable, DuplicateColumnDefError, DuplicatePrimaryKeyDefError, 
                     ReferenceTypeError, ReferenceNonPrimaryKeyError, ReferenceColumnExistenceError, ReferenceTableExistenceError, 
                     NonExistingColumnDefError, TableExistenceError, CharLengthError, DropReferencedTableError, 
                     InsertTypeMismatchError, InsertColumnExistenceError, InsertColumnNonNullableError,
                     InsertDuplicatePrimaryKeyError, InsertReferentialIntegrityError,
                     SelectTableExistenceError, SelectColumnResolveError, 
-                    WhereIncomparableError, WhereTableNotSpecified, WhereColumnNotExist, WhereAmbiguousReference) as e:
+                    WhereIncomparableError, WhereTableNotSpecified, WhereColumnNotExist, WhereAmbiguousReference,
+                    UpdateTypeMismatchError, UpdateColumnExistenceError, UpdateColumnNonNullableError,
+                    UpdateDuplicatePrimaryKeyError, UpdateReferentialIntegrityError,
+                    IndexExistenceError, NoSuchIndex,
+                    NoActiveTransaction, TransactionAlreadyActive) as e:
                 print(PROMPT + str(e))
                 break
             

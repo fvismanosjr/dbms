@@ -1,0 +1,60 @@
+DB_2023-12345> DB_2023-12345> 'test_index' table is created
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> Index 'idx_id' is created
+DB_2023-12345> DB_2023-12345> [Index scan: 1 row(s) via test_index.id]
+
++----+------+-----+
+| ID | NAME | AGE |
++----+------+-----+
+| 2  | bob  | 30  |
++----+------+-----+
+DB_2023-12345> DB_2023-12345> 
+-----------------------------------------------------------------
+table_name [test_index]
+column_name              type           null      key       
+id                       int            N         PRI       
+name                     char(20)       Y                   
+age                      int            Y                   
+-----------------------------------------------------------------
+Indexes:
+  id
+
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> [Index scan: 1 row(s) via test_index.id]
+
++----+------+-----+
+| ID | NAME | AGE |
++----+------+-----+
+| 5  | eve  | 28  |
++----+------+-----+
+DB_2023-12345> DB_2023-12345> [Index scan: 1 row(s) via test_index.id]
+'1' row(s) are deleted
+DB_2023-12345> DB_2023-12345> [Index scan: 0 row(s) via test_index.id]
+
++----+------+-----+
+| ID | NAME | AGE |
++----+------+-----+
++----+------+-----+
+DB_2023-12345> DB_2023-12345> [Index scan: 1 row(s) via test_index.id]
+'1' row(s) are updated
+DB_2023-12345> DB_2023-12345> [Index scan: 1 row(s) via test_index.id]
+
++----+-------+-----+
+| ID | NAME  | AGE |
++----+-------+-----+
+| 99 | alice | 25  |
++----+-------+-----+
+DB_2023-12345> DB_2023-12345> No such table
+DB_2023-12345> DB_2023-12345> Create table has failed: 'nonexistent' does not exist in column definition
+DB_2023-12345> DB_2023-12345> Index 'test_index.id' is dropped
+DB_2023-12345> DB_2023-12345> 
++----+---------+-----+
+| ID | NAME    | AGE |
++----+---------+-----+
+| 3  | charlie | 35  |
++----+---------+-----+
+DB_2023-12345> DB_2023-12345> 'test_index' table is dropped
+DB_2023-12345> 

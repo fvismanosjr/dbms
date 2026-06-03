@@ -16,14 +16,16 @@ class SQLTransformer(Transformer):
         }
         self.record = list()  # values to insert
         self.tables = list()
-        self.select_columns = list()  # [(table_name, column_name), ...)] or '*
+        self.select_columns = list()  # [(table_name, column_name), ...)] or '*'
         self.where = dict()  # [(table_name, column_name, operator, value), ...] up to 4 conditions
+        self.index = dict()  # {"index_name": str, "table_name": str, "column_name": str}
+        self.assignments = dict()  # {column_name: value} for UPDATE
         
     # assumes the parse tree transforms only one query at a time
     def command(self, items):
         if items[0] == "exit":
             self.statement = items[0]
-        return self.statement, self.table, self.record, self.tables, self.select_columns, self.where
+        return self.statement, self.table, self.record, self.tables, self.select_columns, self.where, self.index, self.assignments
     
     def query_list(self, items):
         return items[0]
@@ -245,7 +247,57 @@ class SQLTransformer(Transformer):
         else:
             return "is", None
     
-    # not for project 1-2, 1-3
     def update_query(self, items):
         self.statement = items[0].lower()
-        return "'UPDATE' requested"
+        self.table = {
+            "table_name": items[1],
+        }
+        self.assignments = items[3]  # dict of column_name -> value
+        self.where = items[4] if len(items) > 4 and items[4] is not None else None
+        return items
+
+    def assignment_list(self, items):
+        result = {}
+        for item in items:
+            if isinstance(item, dict):
+                result.update(item)
+            elif isinstance(item, tuple):
+                result[item[0]] = item[1]
+        return result
+
+    def assignment(self, items):
+        return (items[0], items[2])  # (column_name, value)
+
+    def create_index_query(self, items):
+        self.statement = "create index"
+        self.index = {
+            "index_name": items[2],
+            "table_name": items[4],
+            "column_name": items[6]
+        }
+        return items
+
+    def drop_index_query(self, items):
+        self.statement = "drop index"
+        # Grammar: DROP INDEX table_name "." column_name
+        # items: [DROP, INDEX, table_name, column_name] (PERIOD consumed silently)
+        self.index = {
+            "table_name": items[2],
+            "column_name": items[3]
+        }
+        return items
+
+    def begin_query(self, items):
+        self.statement = "begin"
+        return items
+
+    def commit_query(self, items):
+        self.statement = "commit"
+        return items
+
+    def rollback_query(self, items):
+        self.statement = "rollback"
+        return items
+
+    def index_name(self, items):
+        return items[0].value.lower()

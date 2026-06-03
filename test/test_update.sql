@@ -1,0 +1,16 @@
+create table test_update (id int not null, name char(20), score int, primary key(id));
+insert into test_update values(1, 'alice', 90);
+insert into test_update values(2, 'bob', 85);
+update test_update set name = 'alice smith' where id = 1;
+select * from test_update where id = 1;
+update test_update set name = 'robert', score = 95 where id = 2;
+select * from test_update where id = 2;
+update test_update set score = 'not_a_number' where id = 1;
+update test_update set name = null where id = 1;
+update test_update set id = 2 where id = 1;
+update nonexistent set name = 'test' where id = 1;
+update test_update set nonexistent = 'test' where id = 1;
+update test_update set score = 100;
+select * from test_update;
+drop table test_update;
+exit;

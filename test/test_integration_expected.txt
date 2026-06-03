@@ -1,0 +1,61 @@
+DB_2023-12345> DB_2023-12345> 'departments' table is created
+DB_2023-12345> DB_2023-12345> 'employees' table is created
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> Index 'emp_dept_idx' is created
+DB_2023-12345> DB_2023-12345> Syntax error
+DB_2023-12345> DB_2023-12345> Transaction started
+DB_2023-12345> DB_2023-12345> '1' row(s) are updated
+DB_2023-12345> DB_2023-12345> 
++--------+----------+---------+--------+
+| EMP_ID | EMP_NAME | DEPT_ID | SALARY |
++--------+----------+---------+--------+
+| 3      | Charlie  | 1       | 130000 |
++--------+----------+---------+--------+
+DB_2023-12345> DB_2023-12345> Transaction rolled back
+DB_2023-12345> DB_2023-12345> 
++--------+----------+---------+--------+
+| EMP_ID | EMP_NAME | DEPT_ID | SALARY |
++--------+----------+---------+--------+
+| 3      | Charlie  | 1       | 120000 |
++--------+----------+---------+--------+
+DB_2023-12345> DB_2023-12345> '1' row(s) are updated
+DB_2023-12345> DB_2023-12345> 
++--------+----------+---------+--------+
+| EMP_ID | EMP_NAME | DEPT_ID | SALARY |
++--------+----------+---------+--------+
+| 1      | Alice    | 2       | 100000 |
++--------+----------+---------+--------+
+DB_2023-12345> DB_2023-12345> Update has failed: Referential integrity violation
+DB_2023-12345> DB_2023-12345> Transaction started
+DB_2023-12345> DB_2023-12345> '1' row(s) are deleted
+DB_2023-12345> DB_2023-12345> Transaction rolled back
+DB_2023-12345> DB_2023-12345> 
++--------+----------+---------+--------+
+| EMP_ID | EMP_NAME | DEPT_ID | SALARY |
++--------+----------+---------+--------+
+| 1      | Alice    | 2       | 100000 |
+| 2      | Bob      | 2       | 80000  |
+| 3      | Charlie  | 1       | 120000 |
++--------+----------+---------+--------+
+DB_2023-12345> 
+[STDERR]
+Traceback (most recent call last):
+  File "C:\projects\SQL-DBMS\run.py", line 106, in <module>
+    main()
+    ~~~~^^
+  File "C:\projects\SQL-DBMS\run.py", line 29, in main
+    success = dbms.drop_table(table["table_name"])
+  File "C:\projects\SQL-DBMS\dbms.py", line 230, in drop_table
+    DB(table_name).remove_files()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\projects\SQL-DBMS\db_model.py", line 247, in remove_files
+    path.unlink()
+    ~~~~~~~~~~~^^
+  File "C:\Users\FerminVismanos\AppData\Local\Python\pythoncore-3.14-64\Lib\pathlib\__init__.py", line 1042, in unlink
+    os.unlink(self)
+    ~~~~~~~~~^^^^^^
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'DB\\employees.db'

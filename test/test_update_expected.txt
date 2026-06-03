@@ -1,0 +1,32 @@
+DB_2023-12345> DB_2023-12345> 'test_update' table is created
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> The row is inserted
+DB_2023-12345> DB_2023-12345> '1' row(s) are updated
+DB_2023-12345> DB_2023-12345> 
++----+-------------+-------+
+| ID | NAME        | SCORE |
++----+-------------+-------+
+| 1  | alice smith | 90    |
++----+-------------+-------+
+DB_2023-12345> DB_2023-12345> '1' row(s) are updated
+DB_2023-12345> DB_2023-12345> 
++----+--------+-------+
+| ID | NAME   | SCORE |
++----+--------+-------+
+| 2  | robert | 95    |
++----+--------+-------+
+DB_2023-12345> DB_2023-12345> Update has failed: Types are not matched
+DB_2023-12345> DB_2023-12345> '1' row(s) are updated
+DB_2023-12345> DB_2023-12345> Update has failed: Primary key duplication
+DB_2023-12345> DB_2023-12345> No such table
+DB_2023-12345> DB_2023-12345> Update has failed: 'nonexistent' does not exist
+DB_2023-12345> DB_2023-12345> '2' row(s) are updated
+DB_2023-12345> DB_2023-12345> 
++----+--------+-------+
+| ID | NAME   | SCORE |
++----+--------+-------+
+| 1  | null   | 100   |
+| 2  | robert | 100   |
++----+--------+-------+
+DB_2023-12345> DB_2023-12345> 'test_update' table is dropped
+DB_2023-12345> 
