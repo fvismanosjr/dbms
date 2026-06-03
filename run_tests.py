@@ -2,7 +2,6 @@
 """
 SQL-DBMS Test Runner
 Runs all feature tests and compares output against expected outputs.
-Supports parallel execution via multiprocessing.
 """
 
 import subprocess
@@ -11,9 +10,8 @@ import os
 import re
 import sys
 import argparse
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 
 TEST_DIR = "test"
@@ -48,16 +46,80 @@ def strip_comments(sql: str) -> str:
 
 
 def normalize_output(output: str) -> str:
-    """Normalize output for comparison by removing prompts and extra whitespace."""
+    """Normalize output for comparison by:
+    1. Normalizing line endings
+    2. Removing prompts
+    3. Stripping trailing whitespace
+    4. Removing empty lines
+    """
+    # Normalize line endings first
+    output = output.replace('\r\n', '\n').replace('\r', '\n')
     lines = output.split('\n')
     cleaned = []
     for line in lines:
         # Remove prompt prefix
-        line = re.sub(r'^DB_\d{4}-\d+>\s*', '', line)
+        line = re.sub(r'^(DB_\d{4}-\d+>\s*)+', '', line)
         line = line.rstrip()
         if line:
             cleaned.append(line)
     return '\n'.join(cleaned)
+
+
+def sort_select_rows(output: str) -> str:
+    """Sort data rows within SELECT result tables for order-independent comparison.
+
+    The dbm module returns keys in insertion order on some platforms (dbm.dumb)
+    and hash order on others (dbm.gnu). This causes SELECT * results to appear
+    in different orders across platforms. We sort the data rows so comparison
+    is order-independent.
+    """
+    lines = output.split('\n')
+    result = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if line.startswith('+-'):
+            # Found start of an ASCII table (SELECT result)
+            table_parts = [line]  # top separator
+            i += 1
+
+            # Collect header row
+            if i < len(lines) and lines[i].startswith('|'):
+                table_parts.append(lines[i])
+                i += 1
+
+            # Check for middle separator (+- line after header)
+            has_middle = False
+            if i < len(lines) and lines[i].startswith('+-'):
+                table_parts.append(lines[i])  # middle separator
+                i += 1
+                has_middle = True
+
+            # Collect data rows
+            data_rows = []
+            while i < len(lines) and lines[i].startswith('|'):
+                data_rows.append(lines[i])
+                i += 1
+
+            # Collect bottom separator
+            if i < len(lines) and lines[i].startswith('+-'):
+                table_parts.append(lines[i])
+                i += 1
+
+            # Sort data rows alphabetically and reconstruct table
+            data_rows.sort()
+            if has_middle:
+                result.extend(table_parts[:3])   # top, header, middle
+            else:
+                result.extend(table_parts[:2])    # top, header
+            result.extend(data_rows)
+            if len(table_parts) > (3 if has_middle else 2):
+                result.append(table_parts[-1])   # bottom separator
+        else:
+            result.append(line)
+            i += 1
+
+    return '\n'.join(result)
 
 
 def run_single_test(test_name: str) -> TestResult:
@@ -115,9 +177,9 @@ def run_single_test(test_name: str) -> TestResult:
     if result.stderr:
         output += "\n[STDERR]\n" + result.stderr
 
-    # Compare
-    norm_output = normalize_output(output)
-    norm_expected = normalize_output(expected)
+    # Compare with robust normalization (order-independent SELECT rows)
+    norm_output = sort_select_rows(normalize_output(output))
+    norm_expected = sort_select_rows(normalize_output(expected))
 
     if norm_output == norm_expected:
         return TestResult(
@@ -152,26 +214,15 @@ def run_single_test(test_name: str) -> TestResult:
         )
 
 
-def run_all_tests(parallel: bool = False, verbose: bool = False) -> List[TestResult]:
-    print(f"Running {len(TEST_FILES)} test suite(s)...")
-    print(f"Parallel: {'yes' if parallel else 'no'}\n")
+def run_all_tests(verbose: bool = False) -> List[TestResult]:
+    print(f"Running {len(TEST_FILES)} test suite(s)...\n")
 
-    if parallel:
-        print("WARNING: Local parallel mode disabled due to shared DB state.")
-        print("Use the CI workflow for true parallel execution.\n")
-        results = []
-        for name in TEST_FILES:
-            result = run_single_test(name)
-            results.append(result)
-            if verbose or not result.passed:
-                print_result(result)
-    else:
-        results = []
-        for name in TEST_FILES:
-            result = run_single_test(name)
-            results.append(result)
-            if verbose or not result.passed:
-                print_result(result)
+    results = []
+    for name in TEST_FILES:
+        result = run_single_test(name)
+        results.append(result)
+        if verbose or not result.passed:
+            print_result(result)
 
     return results
 
@@ -187,23 +238,31 @@ def print_result(result: TestResult):
     print()
 
 
+def generate_all_expected():
+    """Regenerate all expected output files from current test runs."""
+    print("Regenerating expected outputs...")
+    for name in TEST_FILES:
+        result = run_single_test(name)
+        out_file = os.path.join(TEST_DIR, f"{name}_expected.txt")
+
+        # Normalize before writing so files are platform-independent
+        normalized = sort_select_rows(normalize_output(result.output))
+
+        with open(out_file, "w", encoding="utf-8") as f:
+            f.write(normalized)
+        print(f"  Written: {out_file}")
+    print("Done!")
+
+
 def main():
     parser = argparse.ArgumentParser(description="SQL-DBMS Test Runner")
-    parser.add_argument("--parallel", "-p", action="store_true", help="Run tests in parallel")
     parser.add_argument("--verbose", "-v", action="store_true", help="Show all test output")
     parser.add_argument("--test", "-t", type=str, help="Run a specific test (e.g., test_update)")
     parser.add_argument("--generate", "-g", action="store_true", help="Regenerate expected outputs")
     args = parser.parse_args()
 
     if args.generate:
-        print("Regenerating expected outputs...")
-        for name in TEST_FILES:
-            result = run_single_test(name)
-            out_file = os.path.join(TEST_DIR, f"{name}_expected.txt")
-            with open(out_file, "w", encoding="utf-8") as f:
-                f.write(result.output)
-            print(f"  Written: {out_file}")
-        print("Done!")
+        generate_all_expected()
         return
 
     if args.test:
@@ -213,7 +272,7 @@ def main():
             sys.exit(1)
         results = [run_single_test(args.test)]
     else:
-        results = run_all_tests(parallel=args.parallel, verbose=args.verbose)
+        results = run_all_tests(verbose=args.verbose)
 
     # Summary
     passed = sum(1 for r in results if r.passed)

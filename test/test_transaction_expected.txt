@@ -1,9 +1,8 @@
-DB_2023-12345> DB_2023-12345> 'test_tx' table is created
-DB_2023-12345> DB_2023-12345> The row is inserted
-DB_2023-12345> DB_2023-12345> The row is inserted
-DB_2023-12345> DB_2023-12345> Transaction started
-DB_2023-12345> DB_2023-12345> The row is inserted
-DB_2023-12345> DB_2023-12345> 
+'test_tx' table is created
+The row is inserted
+The row is inserted
+Transaction started
+The row is inserted
 +----+---------+---------+
 | ID | NAME    | BALANCE |
 +----+---------+---------+
@@ -11,18 +10,16 @@ DB_2023-12345> DB_2023-12345>
 | 2  | bob     | 500     |
 | 3  | charlie | 750     |
 +----+---------+---------+
-DB_2023-12345> DB_2023-12345> Transaction rolled back
-DB_2023-12345> DB_2023-12345> 
+Transaction rolled back
 +----+-------+---------+
 | ID | NAME  | BALANCE |
 +----+-------+---------+
 | 1  | alice | 1000    |
 | 2  | bob   | 500     |
 +----+-------+---------+
-DB_2023-12345> DB_2023-12345> Transaction started
-DB_2023-12345> DB_2023-12345> The row is inserted
-DB_2023-12345> DB_2023-12345> Transaction committed
-DB_2023-12345> DB_2023-12345> 
+Transaction started
+The row is inserted
+Transaction committed
 +----+---------+---------+
 | ID | NAME    | BALANCE |
 +----+---------+---------+
@@ -30,33 +27,29 @@ DB_2023-12345> DB_2023-12345>
 | 2  | bob     | 500     |
 | 3  | charlie | 750     |
 +----+---------+---------+
-DB_2023-12345> DB_2023-12345> '1' row(s) are updated
-DB_2023-12345> DB_2023-12345> Transaction started
-DB_2023-12345> DB_2023-12345> '1' row(s) are updated
-DB_2023-12345> DB_2023-12345> 
+'1' row(s) are updated
+Transaction started
+'1' row(s) are updated
 +----+-------+---------+
 | ID | NAME  | BALANCE |
 +----+-------+---------+
 | 1  | in_tx | 1000    |
 +----+-------+---------+
-DB_2023-12345> DB_2023-12345> Transaction rolled back
-DB_2023-12345> DB_2023-12345> 
+Transaction rolled back
 +----+----------+---------+
 | ID | NAME     | BALANCE |
 +----+----------+---------+
 | 1  | modified | 1000    |
 +----+----------+---------+
-DB_2023-12345> DB_2023-12345> Transaction started
-DB_2023-12345> DB_2023-12345> '1' row(s) are deleted
-DB_2023-12345> DB_2023-12345> 
+Transaction started
+'1' row(s) are deleted
 +----+----------+---------+
 | ID | NAME     | BALANCE |
 +----+----------+---------+
 | 1  | modified | 1000    |
 | 3  | charlie  | 750     |
 +----+----------+---------+
-DB_2023-12345> DB_2023-12345> Transaction rolled back
-DB_2023-12345> DB_2023-12345> 
+Transaction rolled back
 +----+----------+---------+
 | ID | NAME     | BALANCE |
 +----+----------+---------+
@@ -64,11 +57,10 @@ DB_2023-12345> DB_2023-12345>
 | 2  | bob      | 500     |
 | 3  | charlie  | 750     |
 +----+----------+---------+
-DB_2023-12345> DB_2023-12345> Transaction started
-DB_2023-12345> DB_2023-12345> The row is inserted
-DB_2023-12345> DB_2023-12345> '1' row(s) are updated
-DB_2023-12345> DB_2023-12345> '1' row(s) are deleted
-DB_2023-12345> DB_2023-12345> 
+Transaction started
+The row is inserted
+'1' row(s) are updated
+'1' row(s) are deleted
 +----+----------+---------+
 | ID | NAME     | BALANCE |
 +----+----------+---------+
@@ -76,8 +68,7 @@ DB_2023-12345> DB_2023-12345>
 | 2  | bob      | 500     |
 | 4  | dave     | 300     |
 +----+----------+---------+
-DB_2023-12345> DB_2023-12345> Transaction rolled back
-DB_2023-12345> DB_2023-12345> 
+Transaction rolled back
 +----+----------+---------+
 | ID | NAME     | BALANCE |
 +----+----------+---------+
@@ -85,11 +76,10 @@ DB_2023-12345> DB_2023-12345>
 | 2  | bob      | 500     |
 | 3  | charlie  | 750     |
 +----+----------+---------+
-DB_2023-12345> DB_2023-12345> Transaction started
-DB_2023-12345> DB_2023-12345> '1' row(s) are updated
-DB_2023-12345> DB_2023-12345> The row is inserted
-DB_2023-12345> DB_2023-12345> Transaction committed
-DB_2023-12345> DB_2023-12345> 
+Transaction started
+'1' row(s) are updated
+The row is inserted
+Transaction committed
 +----+----------+---------+
 | ID | NAME     | BALANCE |
 +----+----------+---------+
@@ -98,5 +88,4 @@ DB_2023-12345> DB_2023-12345>
 | 3  | charlie  | 750     |
 | 4  | dave     | 300     |
 +----+----------+---------+
-DB_2023-12345> DB_2023-12345> 'test_tx' table is dropped
-DB_2023-12345> 
+'test_tx' table is dropped
