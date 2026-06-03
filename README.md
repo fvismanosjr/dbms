@@ -1,145 +1,330 @@
 # Database Management System: A Simple SQL Implementation Using Python
+
 This repository contains a simple SQL Database Management System (DBMS) implemented in Python. The primary objective of the project is to simulate basic functionalities of a SQL database like parsing SQL queries, managing schema metadata, and performing CRUD (Create, Read, Update, Delete) operations.
 
-## Features
-- SQL Query Parsing
-- Schema Management
-- CRUD (Create, Read, Update, Delete) Operations
-- Error Handling
+## What's Included
 
-## Environment
-```
-python==3.9
-lark==1.1.5
-```
-Storage is backed by Python's built-in [`dbm`](https://docs.python.org/3/library/dbm.html) module, so there are no native libraries to install (this replaces the original BerkeleyDB backend). This is what makes the project run identically on macOS, Linux, and Windows.
+- **SQL Query Parsing** — `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `CREATE TABLE`, `DROP TABLE`, `CREATE INDEX`, `DROP INDEX`, `EXPLAIN`, `SHOW TABLES`
+- **Transactions** — `BEGIN`, `COMMIT`, `ROLLBACK` with undo log
+- **Indexing** — Hash-based indexes with automatic index scan for point lookups
+- **Schema Management** — Table/column metadata with PK, FK, NOT NULL, CHECK constraints
+- **Web GUI** — Flask-based interface to run queries visually
+- **Test Suite** — Automated tests for all features
 
-### Run natively
+---
+
+## Prerequisites
+
+- **Python 3.9** (required — newer versions may work but 3.9 is tested)
+- **pip** (Python package manager)
+- **Git** (to clone the repository)
+
+> **Windows users:** Make sure Python is installed from [python.org](https://www.python.org/downloads/release/python-3913/) and added to your PATH. The Microsoft Store stub will not work.
+
+---
+
+## Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/mhsniranmanesh/SQL-DBMS.git
+cd SQL-DBMS
 ```
+
+### 2. Create a virtual environment
+
+This isolates the project dependencies from your system Python.
+
+**Windows (Command Prompt):**
+```cmd
 python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+venv\Scripts\activate.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1
+```
+
+**Windows (Git Bash):**
+```bash
+python -m venv venv
+source venv/Scripts/activate
+```
+
+**macOS / Linux:**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+> You should see `(venv)` at the start of your prompt when activated.
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
+```
+
+This installs `lark==1.1.5` and `flask==3.0.3`.
+
+---
+
+## Run the CLI (Interactive SQL REPL)
+
+The command-line interface lets you type SQL queries interactively.
+
+```bash
 python run.py
 ```
 
-### Run in Docker (recommended for a consistent, cross-platform setup)
-The repo ships a `Dockerfile`, `docker-compose.yml`, and `Makefile` so everyone runs the same environment regardless of host OS:
+You will see a prompt:
+
 ```
+DB_2023-12345>
+```
+
+Type SQL commands (end each with a semicolon `;`):
+
+```sql
+create table students (id int not null, name char(20), primary key(id));
+insert into students values(1, 'alice');
+insert into students values(2, 'bob');
+select * from students;
+exit;
+```
+
+Press **Enter** after each statement. The REPL reads one query at a time.
+
+---
+
+## Run the Web GUI
+
+The web interface provides a browser-based SQL editor with a schema browser, results table, and transaction status indicator.
+
+```bash
+python app.py
+```
+
+Then open your browser to: **http://127.0.0.1:8080**
+
+You will see:
+- **Left sidebar** — Schema browser showing all tables, columns, and indexes
+- **Center** — SQL editor with Run, Clear, and Load Example buttons
+- **Bottom** — Results displayed as formatted tables or messages
+
+### GUI Features
+- Run multiple statements at once (separate with `;`)
+- `Ctrl + Enter` to run the current query
+- Transaction status badge in the header
+- Error messages shown in red without crashing the UI
+
+---
+
+## Run the Test Suite
+
+Verify that all features work correctly:
+
+```bash
+python run_tests.py --verbose
+```
+
+Expected output:
+```
+[OK] PASS: test_update (1032ms)
+[OK] PASS: test_index (1210ms)
+[OK] PASS: test_transaction (1711ms)
+[OK] PASS: test_integration (1517ms)
+
+==================================================
+Results: 4/4 passed
+==================================================
+```
+
+To regenerate expected outputs (after changing behavior):
+
+```bash
+python run_tests.py --generate
+```
+
+---
+
+## SQL Syntax Reference
+
+### DDL (Data Definition)
+
+```sql
+create table account (
+    account_number int not null,
+    branch_name char(15),
+    balance int,
+    primary key(account_number)
+);
+
+create table depositor (
+    customer_name char(15) not null,
+    account_number int not null,
+    primary key(customer_name, account_number),
+    foreign key(account_number) references account(account_number)
+);
+
+drop table account;
+
+show tables;
+
+explain account;
+```
+
+### DML (Data Manipulation)
+
+```sql
+insert into account values(1, 'Perryridge', 500);
+
+update account set branch_name = 'Downtown' where account_number = 1;
+
+update account set branch_name = 'Uptown', balance = 1000 where account_number = 1;
+
+delete from account where balance < 100;
+
+select * from account;
+
+select account_number, branch_name from account where balance > 200;
+
+select customer_name, borrower.loan_number, amount
+from borrower, loan
+where borrower.loan_number = loan.loan_number
+and branch_name = 'Perryridge';
+```
+
+### Indexing
+
+```sql
+create index idx_name on account(account_number);
+
+drop index account.account_number;
+```
+
+### Transactions
+
+```sql
+begin;
+insert into account values(99, 'Temp', 0);
+select * from account;
+rollback;   -- undoes the insert
+
+begin;
+update account set balance = 999 where account_number = 1;
+commit;     -- persists the update
+```
+
+### Exit
+
+```sql
+exit;
+```
+
+---
+
+## Important Notes
+
+- **Identifiers** must start with a letter and contain only letters and underscores. Names like `t2` are rejected by the grammar. Use `account`, `students`, `branch_name`, etc.
+- **Each statement** must end with a semicolon `;`.
+- **NULL values** are typed as `null` (without quotes).
+- **Strings** use single quotes: `'hello'`.
+- **Storage** is backed by Python's built-in `dbm` module. All data is stored in a `DB/` directory created in the project root.
+- To **wipe the database**, simply delete the `DB/` folder.
+
+---
+
+## Project Structure
+
+| File | Purpose |
+|---|---|
+| `run.py` | CLI entry point — interactive SQL REPL |
+| `app.py` | Web GUI entry point — Flask server |
+| `grammar.lark` | SQL grammar definition (Lark EBNF) |
+| `sql_transformer.py` | AST transformer — parses SQL into Python structures |
+| `dbms.py` | Core engine — executes SQL statements |
+| `db_model.py` | Data structures (`Table`, `Record`, `DB`) |
+| `messages.py` | Success/error message classes |
+| `utils.py` | Type validation, operator mappings |
+| `run_tests.py` | Test runner for all features |
+| `test/` | Test SQL files and expected outputs |
+| `.github/workflows/test.yml` | CI workflow for GitHub Actions |
+| `templates/index.html` | Web GUI frontend |
+
+---
+
+## Troubleshooting
+
+### `python` not found
+
+If `python` is not recognized, try `python3` or `py` instead. On Windows, make sure you installed Python from [python.org](https://www.python.org/downloads/) and checked **"Add Python to PATH"** during installation.
+
+### PowerShell execution policy error
+
+If PowerShell blocks the activation script:
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+Then retry `venv\Scripts\Activate.ps1`.
+
+### Port 8080 is already in use
+
+If you see `Address already in use`, another process is using port 8080. Either:
+- Stop the other process, or
+- Change the port in `app.py`: `app.run(host='127.0.0.1', port=8081)`
+
+### "SQLite objects created in a thread" error
+
+This happens when the GUI handles requests in multiple threads. The project already sets `threaded=False` in `app.py` to prevent this. If you still see it, restart `app.py`.
+
+### Corrupted database
+
+If queries start returning strange errors, the `dbm` files may be corrupted:
+
+```bash
+# Windows
+rmdir /s /q DB
+
+# macOS / Linux
+rm -rf DB
+```
+
+Then restart the app.
+
+---
+
+## Docker (Alternative)
+
+The repo ships a `Dockerfile`, `docker-compose.yml`, and `Makefile` for a consistent cross-platform setup:
+
+```bash
 make build      # build the image (once)
 make run        # start the interactive SQL REPL
 make shell      # open a shell inside the container
 make test       # pipe a few statements through the engine as a smoke test
 make reset      # wipe the database volume
 ```
-VS Code / Cursor users can instead "Reopen in Container" (see `.devcontainer/`).
 
-> Note: table and column **identifiers must start with a letter and contain only letters and underscores** — names like `t2` are rejected by the grammar as a syntax error. Use `account`, `students`, etc.
-
-## Sample I/O
-
-```
-DB_2023-12345> create table account 
-(
-account_number int not null, 
-branch_name char(15)
-); 
-DB_2023-12345> 'account' table is created
-```
-```
-DB_2023-12345> drop table account;
-DB_2023-12345> 'account' table is dropped
-```
-```
-DB_2023-12345> explain account;
------------------------------------------------------------------
-table_name [account]
-column_name		    type		  null		key
-account_number		char(10)	N		    PRI
-branch_name		    char(15)	N		    FOR
-balance			      int		    Y  
------------------------------------------------------------------
-```
-```
-DB_2023-12345> show tables
-------------------------
-branch
-customer
-loan
-borrower
-account
-depositor
-------------------------
-```
-```
-DB_2023-12345> insert into account values(9732, 'Perryridge');
-DB_2023-12345> The row is inserted
-```
-```
-DB_2023-12345> delete from account where branch_name = 'Perryridge';
-DB_2023-12345> 5 row(s) are deleted
-```
-```
-DB_2023-12345> select * from account; 
-+----------------+-------------+---------+ 
-| ACCOUNT_NUMBER | BRANCH_NAME | BALANCE | 
-+----------------+-------------+---------+
-| A-101
-| A-102
-| A-201
-| A-215
-| A-217
-| A-222
-| A-305
-+----------------+-------------+---------+
-DB_2023-12345> select customer_name, borrower.loan_number, amount from borrower, loan where borrower.loan_number = loan.loan_number and branch_name = 'Perryridge'; 
-+---------------+-------------+--------+
-| CUSTOMER_NAME | LOAN_NUMBER | AMOUNT | 
-+---------------+-------------+--------+
-| Adams | L-16 | 1300 | 
-| Hayes | L-15 | 1500 | 
-+---------------+-------------+--------+
-```
-
-## Core Modules
-- `grammar.lark`: Defines SQL grammar in EBNF (Extended Backus-Naur Form). Using the Lark API, this file serves as the basis for parsing SQL queries into AST (Abstract Syntax Trees).
-
-- `sql_transformer.py`: Inherits from Lark's `Transformer` class to handle the AST generated by the parser. It processes and returns tables, records, and columns selected in the query.
-
-- `db_model.py`: Defines the data structures for schemas and records (each represented by `Table` and `Record` classes). It also contains a `DB` class which acts as a wrapper for manipulating `dbm` key/value stores. Metadata of schemas is stored in `MetaDB`, which inherits from the `DB` class.
-
-- `dbms.py`: Handles SQL statements such as `CREATE TABLE`, `DROP TABLE`, `EXPLAIN/DESCRIBE/DESC`, `SHOW TABLES`, `INSERT`, `DELETE`, `SELECT` through a `DBMS` class.
-
-- `messages.py`: Defines exception classes for logging and error messages that indicate whether the SQL command was executed successfully by the `DBMS` class.
-
-- `utils.py`: Defines function mappings for unknown variables and logical operations in SQL, as well as for parsed comparison/null operators. It also includes functions for validating data types, including `date` data types.
-
-- `run.py`: Splits the query sequence into multiple statements and performs actions for each query. It imports the `Lark` class from the Lark library and generates a parser based on the grammar defined in the `grammar.lark` file. It also imports `SQLTransformer` to interpret the AST generated by the parser and extract the necessary data. The corresponding handling functions for SQL statements are called from the `DBMS` instance, and the result or error message is output.
-
-
-
-## Implementation Details
-- `grammar.lark`
-  - Adds `null` data type to the `INSERT` statement to allow null values.
-- `sql_transformer.py`
-  - The transformer navigates the AST in a bottom-up manner, collecting and categorizing data into queries, tables, and record information as it traverses the nodes. The result is returned in the form of a dictionary.
-  - Input table and column names are converted to lowercase.
-  - Type casting is done for `int` values as Python's `int` and for `null` values as Python's `None`.
-  - It also handles the `where` clause in SQL by parsing predicates, Boolean factors, and Boolean terms, saving operators and operands in a dictionary, which eventually becomes a nested dictionary.
-
-- `db_model.py`
-  - Uses a separate DB file to store and manage schema metadata (*Metadata schema*) and employs a *one DB-one schema* approach where a single DB file contains all records for one table. The reason for this is that `dbm` stores data in a key-value pair format within a single DB. When table keys and record keys are mixed within the same DB, inefficiencies can occur when trying to search for just one of them. Therefore, a `MetaDB` instance solely for managing metadata is continuously managed within the DBMS, and a new `DB` is created or opened for managing individual tables when necessary.
-  - The `MetaDB` class stores table names as keys and `Table` instances as values in a `dbm` store, while the `DB` class stores the primary key or a randomly generated UUID (if no primary key exists) as key and `Record` instance as value.
-  - Both `Table` and `Record` classes manage information about what tables or records they are referenced by and what columns or record values they are referencing. This allows quick integrity checks during operations like `DROP TABLE`, `INSERT`, `DELETE`.
-- `dbms.py`
-  - Manages a `MetaDB` instance continuously within one `DBMS` instance, fetching table metadata as needed. 
-  - Handles referential integrity during `INSERT` and `DELETE`
-  - Executes `SELECT` by taking cartesian products of records from the involved tables and filters them based on `WHERE` clauses.
-- `utils.py`
-  - Enables flexible handling of operators, irrespective of the number of operands.
-- `run.py`
-  - Reads and processes queries until an "exit" command is encountered.
-  - In case of syntax errors, it prints an error message and stops processing any remaining queries.
-
+VS Code / Cursor users can instead **"Reopen in Container"** (see `.devcontainer/`).
 
 ---
+
+## Implementation Details
+
+- `grammar.lark` — Defines SQL grammar in EBNF. Using the Lark API, this file serves as the basis for parsing SQL queries into AST (Abstract Syntax Trees).
+- `sql_transformer.py` — Inherits from Lark's `Transformer` class to handle the AST generated by the parser. It processes and returns tables, records, and columns selected in the query.
+- `db_model.py` — Defines the data structures for schemas and records (each represented by `Table` and `Record` classes). It also contains a `DB` class which acts as a wrapper for manipulating `dbm` key/value stores. Metadata of schemas is stored in `MetaDB`, which inherits from the `DB` class.
+- `dbms.py` — Handles SQL statements such as `CREATE TABLE`, `DROP TABLE`, `EXPLAIN/DESCRIBE/DESC`, `SHOW TABLES`, `INSERT`, `DELETE`, `SELECT`, `UPDATE`, `CREATE INDEX`, `DROP INDEX`, `BEGIN/COMMIT/ROLLBACK` through a `DBMS` class.
+- `messages.py` — Defines exception classes for logging and error messages that indicate whether the SQL command was executed successfully by the `DBMS` class.
+- `utils.py` — Defines function mappings for unknown variables and logical operations in SQL, as well as for parsed comparison/null operators. It also includes functions for validating data types, including `date` data types.
+- `run.py` — Splits the query sequence into multiple statements and performs actions for each query. It imports the `Lark` class from the Lark library and generates a parser based on the grammar defined in the `grammar.lark` file. It also imports `SQLTransformer` to interpret the AST generated by the parser and extract the necessary data.
+
+---
+
 This project was done as part of Spring 2023 Database M1522.001800 course of Seoul National University.
