@@ -433,7 +433,17 @@ insert into account values(3, 'charlie');
                 let bodyContent = '';
                 
                 if (r.type === 'select' && r.headers && r.rows) {
+                    // Extract index scan note (any lines before the ASCII table)
+                    let prefixNote = '';
+                    if (r.raw) {
+                        const lines = r.raw.split('\n');
+                        const tableStart = lines.findIndex(l => l.startsWith('+-'));
+                        if (tableStart > 0) {
+                            prefixNote = lines.slice(0, tableStart).join('\n');
+                        }
+                    }
                     bodyContent = `
+                        ${prefixNote ? `<pre class="result-note">${escapeHtml(prefixNote)}</pre>` : ''}
                         <table>
                             <thead><tr>${r.headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
                             <tbody>
