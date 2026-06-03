@@ -143,7 +143,7 @@ selected_column : [table_name "."] column_name [AS column_name]
 table_expression : from_clause [where_clause]
 from_clause : FROM table_reference_list
 table_reference_list : referred_table ("," referred_table)*
-referred_table : table_name [AS table_name]
+referred_table : table_name | table_name AS table_name | table_name table_name
 where_clause : WHERE boolean_expr
 boolean_expr : boolean_term (OR boolean_term)*
 boolean_term : boolean_factor (AND boolean_factor)*
